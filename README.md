@@ -34,7 +34,6 @@ A suite of **79 API tests** covering all six JSONPlaceholder resources (posts, c
 
 ### Assumptions made
 
-- **Writes aren't saved.** JSONPlaceholder fakes POST/PUT/PATCH/DELETE, so tests check the response of each write and do not read it back afterwards.
 - **The dataset is static.** Counts (100 posts, 500 comments, 100 albums, 5000 photos, 200 todos, 10 users) and first/last ids are used as expected values.
 - **It is a mock with no validation.** Some invalid requests succeed or return 500. These quirks are pinned with comments that explain what a real API would return.
 - **It is a shared public service.** CI retries failed tests twice to absorb network blips.
@@ -97,16 +96,14 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 
 ### Routes/resources tested
 
-Every resource is tested with all six methods: `GET` list, `GET` by id, `POST`, `PUT`, `PATCH` and `DELETE`.
-
-| Resource   | Records | Filters tested        | Nested routes tested                                        |
-| ---------- | ------: | --------------------- | ----------------------------------------------------------- |
-| `posts`    |     100 | `userId`              | `/posts/:id/comments`                                       |
-| `comments` |     500 | `postId`              | –                                                           |
-| `albums`   |     100 | `userId`              | `/albums/:id/photos`                                        |
-| `photos`   |    5000 | `albumId`             | –                                                           |
-| `todos`    |     200 | `userId`, `completed` | –                                                           |
-| `users`    |      10 | –                     | `/users/:id/posts`, `/users/:id/albums`, `/users/:id/todos` |
+| Resource | GET list | GET by id | POST | PUT | PATCH | DELETE | Filters               | Nested                            |
+| -------- | :------: | :-------: | :--: | :-: | :---: | :----: | --------------------- | --------------------------------- |
+| posts    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`              | `/posts/:id/comments`             |
+| comments |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `postId`              |                                   |
+| albums   |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`              | `/albums/:id/photos`              |
+| photos   |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `albumId`             |                                   |
+| todos    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`, `completed` |                                   |
+| users    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    |                       | `/users/:id/posts\|albums\|todos` |
 
 ### Types of validations implemented
 
