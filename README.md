@@ -58,7 +58,7 @@ A suite of **106 tests** covering all six JSONPlaceholder resources (posts, comm
 
 ### Install dependencies
 
-Requires **Node.js 20+**.
+Requires **Node.js 20+**. Node 22 is recommended, since it's the version CI uses.
 
 ```bash
 npm ci
@@ -228,4 +228,6 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 ### Notes
 
 - TypeScript is pinned to `~6.0` because `typescript-eslint` does not support TypeScript 7 yet.
+- `@types/node` is pinned to `^22` to match the Node version CI runs, so the code can't typecheck against Node features the runtime doesn't have.
+- CI uses the current major versions of the GitHub Actions (`checkout`, `setup-node` and `upload-artifact` v7), which run on Node 24 instead of the deprecated Node 20.
 - The quirk tests pin the mock's current behaviour, checked against the live API on 2026-09-27. If one fails, the API has changed; confirm with `curl` before updating the expected value.
