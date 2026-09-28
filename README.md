@@ -24,7 +24,7 @@ API test automation for [JSONPlaceholder](https://jsonplaceholder.typicode.com),
 
 ### Brief description of the solution
 
-A suite of **79 API tests** covering all six JSONPlaceholder resources (posts, comments, albums, photos, todos, users) plus error handling.
+A suite of **106 tests** covering all six JSONPlaceholder resources (posts, comments, albums, photos, todos, users), error handling and edge cases, plus self-tests that prove the schemas reject bad data.
 
 - **Playwright Test for API only.** The built-in `request` fixture sends HTTP calls, and no browsers are installed or launched.
 - **Two layers per model.** A hand-written TypeScript interface helps while writing code, and a zod `strictObject` schema checks every real response at runtime. Unexpected extra fields fail the check.
@@ -41,16 +41,18 @@ A suite of **79 API tests** covering all six JSONPlaceholder resources (posts, c
 
 ### Scope of testing completed
 
-| Spec file                |  Tests | What it covers                                                                           |
-| ------------------------ | -----: | ---------------------------------------------------------------------------------------- |
-| `posts.spec.ts`          |     11 | list, unique ids, userId filter, by id, 404, nested comments, POST/PUT/PATCH/DELETE      |
-| `comments.spec.ts`       |     10 | list, unique ids, postId filter (exactly 5), by id, 404, POST/PUT/PATCH/DELETE           |
-| `albums.spec.ts`         |     11 | list, unique ids, userId filter, by id, 404, nested photos, POST/PUT/PATCH/DELETE        |
-| `photos.spec.ts`         |     10 | list, unique ids, albumId filter (exactly 50), by id, 404, POST/PUT/PATCH/DELETE         |
-| `todos.spec.ts`          |     12 | list, unique ids, 3 filter cases, by id, 404, POST/PUT/PATCH/DELETE                      |
-| `users.spec.ts`          |     12 | list, unique ids/usernames/emails, by id, 404, 3 nested resources, POST/PUT/PATCH/DELETE |
-| `error-handling.spec.ts` |     13 | invalid ids, unsupported routes, empty results, known mock quirks                        |
-| **Total**                | **79** |                                                                                          |
+| Spec file                |   Tests | What it covers                                                                                |
+| ------------------------ | ------: | --------------------------------------------------------------------------------------------- |
+| `posts.spec.ts`          |      11 | list, unique ids, userId filter, by id, 404, nested comments, POST/PUT/PATCH/DELETE           |
+| `comments.spec.ts`       |      10 | list, unique ids, postId filter (exactly 5), by id, 404, POST/PUT/PATCH/DELETE                |
+| `albums.spec.ts`         |      11 | list, unique ids, userId filter, by id, 404, nested photos, POST/PUT/PATCH/DELETE             |
+| `photos.spec.ts`         |      10 | list, unique ids, albumId filter (exactly 50), by id, 404, POST/PUT/PATCH/DELETE              |
+| `todos.spec.ts`          |      12 | list, unique ids, 3 filter cases, by id, 404, POST/PUT/PATCH/DELETE                           |
+| `users.spec.ts`          |      12 | list, unique ids/usernames/emails, by id, 404, 3 nested resources, POST/PUT/PATCH/DELETE      |
+| `error-handling.spec.ts` |      13 | invalid ids, unsupported routes, empty results, known mock quirks                             |
+| `edge-cases.spec.ts`     |      12 | unusual ids, write methods on the whole collection, unicode, long text, empty and null values |
+| `schemas.spec.ts`        |      15 | each schema accepts a valid record and rejects records with one thing broken (no API calls)   |
+| **Total**                | **106** |                                                                                               |
 
 ## 2. Execution instructions
 
@@ -77,7 +79,7 @@ npm run format:check  # Prettier
 ### Execute the test suite
 
 ```bash
-npm test                                   # all 79 tests
+npm test                                   # all 106 tests
 npm run test:smoke                         # 18 @smoke tests: list + by-id for every resource
 npx playwright test tests/posts.spec.ts    # one file
 npx playwright test -g "returns 404"       # tests whose title matches a pattern
@@ -118,6 +120,8 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 | Data consistency    | nested route equals the matching filtered route                                                                                     |
 | Write responses     | exact body match with `toEqual` (payload plus expected id)                                                                          |
 | Error bodies        | 404 returns `{}`, and empty queries return `[]`                                                                                     |
+| Data preservation   | unicode, emoji and 10,000-character text come back unchanged                                                                        |
+| Schema self-tests   | each schema accepts a valid record, and rejects a broken one while reporting the expected field (e.g. `['address', 'geo', 'lat']`)  |
 
 ### Test scenarios by category
 
@@ -136,21 +140,23 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 
 #### Response validation
 
-| Check                                                              | Where                         |
-| ------------------------------------------------------------------ | ----------------------------- |
-| Full-list schema match                                             | every "returns all …" test    |
-| Single-record schema match                                         | every by-id, POST, PUT, PATCH |
-| Unique ids / usernames / emails                                    | every "unique" test           |
-| Exact counts per filter (5 comments per post, 50 photos per album) | comments, photos              |
+| Check                                                               | Where                         |
+| ------------------------------------------------------------------- | ----------------------------- |
+| Full-list schema match                                              | every "returns all …" test    |
+| Single-record schema match                                          | every by-id, POST, PUT, PATCH |
+| Unique ids / usernames / emails                                     | every "unique" test           |
+| Exact counts per filter (5 comments per post, 50 photos per album)  | comments, photos              |
+| Unicode and long text preserved on POST                             | `edge-cases.spec.ts`          |
+| Schemas reject wrong types, missing/extra/empty fields, bad formats | `schemas.spec.ts`             |
 
 #### Status code verifications
 
-| Status | When                                                              |
-| ------ | ----------------------------------------------------------------- |
-| 200    | GET, PUT, PATCH, DELETE on existing records; empty filter results |
-| 201    | POST creates                                                      |
-| 404    | unknown ids, invalid ids, unknown routes, POST to a single record |
-| 500    | mock quirks (PUT on missing id, malformed JSON)                   |
+| Status | When                                                                                                                    |
+| ------ | ----------------------------------------------------------------------------------------------------------------------- |
+| 200    | GET, PUT, PATCH, DELETE on existing records; empty filter results                                                       |
+| 201    | POST creates, including the empty-string and null quirks                                                                |
+| 404    | unknown ids, invalid and unusual ids, unknown routes, POST to a single record, PUT/PATCH/DELETE on the whole collection |
+| 500    | mock quirks (PUT on missing id, malformed JSON)                                                                         |
 
 #### Parameterized tests
 
@@ -160,23 +166,32 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 | `TODO_FILTER_CASES`        | userId 1; completed true; userId 1 + completed false |      3 |
 | `USER_OWNED_RESOURCES`     | posts, albums, todos                                 |      3 |
 | `INVALID_POST_IDS`         | `0`, `abc`, `999999`                                 |      3 |
-| **Total**                  |                                                      | **21** |
+| `UNUSUAL_POST_IDS`         | `01`, `1.5`, `-1`, `9007199254740993`                |      4 |
+| `COLLECTION_WRITE_METHODS` | PUT, PATCH, DELETE                                   |      3 |
+| `VALID_RECORD_CASES`       | one valid record per schema                          |      6 |
+| `INVALID_RECORD_CASES`     | one broken field per case, across all 6 schemas      |      9 |
+| **Total**                  |                                                      | **43** |
 
 #### Negative scenarios
 
-| Request                                       | Actual (pinned)       | A real API would return |
-| --------------------------------------------- | --------------------- | ----------------------- |
-| `GET /posts/0`, `/posts/abc`, `/posts/999999` | 404 `{}`              | 404                     |
-| `GET /does-not-exist`                         | 404 `{}`              | 404                     |
-| `POST /posts/1`                               | 404 `{}`              | 404 or 405              |
-| `GET /comments?postId=99999`                  | 200 `[]`              | 200 `[]`                |
-| `GET /posts?userId=abc`                       | 200 `[]`              | 400 or 200 `[]`         |
-| `GET /posts/99999/comments`                   | 200 `[]`              | 404                     |
-| `POST /posts` with `{}`                       | **201 `{ id: 101 }`** | 400                     |
-| `PUT /posts/99999`                            | **500**               | 404                     |
-| `PATCH /posts/99999`                          | **200, echoes body**  | 404                     |
-| `DELETE /posts/99999`                         | **200 `{}`**          | 404                     |
-| `POST /posts` with malformed JSON             | **500**               | 400                     |
+| Request                                             | Actual (pinned)       | A real API would return |
+| --------------------------------------------------- | --------------------- | ----------------------- |
+| `GET /posts/0`, `/posts/abc`, `/posts/999999`       | 404 `{}`              | 404                     |
+| `GET /does-not-exist`                               | 404 `{}`              | 404                     |
+| `POST /posts/1`                                     | 404 `{}`              | 404 or 405              |
+| `GET /comments?postId=99999`                        | 200 `[]`              | 200 `[]`                |
+| `GET /posts?userId=abc`                             | 200 `[]`              | 400 or 200 `[]`         |
+| `GET /posts/99999/comments`                         | 200 `[]`              | 404                     |
+| `POST /posts` with `{}`                             | **201 `{ id: 101 }`** | 400                     |
+| `PUT /posts/99999`                                  | **500**               | 404                     |
+| `PATCH /posts/99999`                                | **200, echoes body**  | 404                     |
+| `DELETE /posts/99999`                               | **200 `{}`**          | 404                     |
+| `POST /posts` with malformed JSON                   | **500**               | 400                     |
+| `GET /posts/01`, `/1.5`, `/-1`, `/9007199254740993` | 404 `{}`              | 404                     |
+| `GET /posts/%31` (URL-encoded `1`)                  | 200, post 1           | 200, post 1             |
+| `PUT`/`PATCH`/`DELETE /posts` (no id)               | 404 `{}`              | 405                     |
+| `POST /posts` with empty strings                    | **201**               | 400                     |
+| `POST /posts` with `null` values                    | **201**               | 400                     |
 
 ### Areas intentionally omitted due to time constraints
 
@@ -200,7 +215,10 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 │   │   └── index.ts              # re-exports everything
 │   ├── helpers/assertions.ts     # assertJsonResponse, assertMatchesSchema
 │   └── data/payloads.ts          # request bodies for POST/PUT/PATCH
-├── tests/                        # one spec per resource + error-handling.spec.ts
+├── tests/                        # one spec per resource, plus:
+│   ├── error-handling.spec.ts    # invalid ids, bad routes, empty results, mock quirks
+│   ├── edge-cases.spec.ts        # unusual ids, collection methods, awkward text values
+│   └── schemas.spec.ts           # schema self-tests (no API calls)
 ├── playwright.config.ts
 ├── tsconfig.json
 ├── eslint.config.mjs
