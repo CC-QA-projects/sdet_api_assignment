@@ -97,14 +97,16 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 
 ### Routes/resources tested
 
-| Resource | GET list | GET by id | POST | PUT | PATCH | DELETE | Filters               | Nested                            |
-| -------- | :------: | :-------: | :--: | :-: | :---: | :----: | --------------------- | --------------------------------- |
-| posts    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`              | `/posts/:id/comments`             |
-| comments |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `postId`              |                                   |
-| albums   |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`              | `/albums/:id/photos`              |
-| photos   |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `albumId`             |                                   |
-| todos    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    | `userId`, `completed` |                                   |
-| users    |    ✓     |     ✓     |  ✓   |  ✓  |   ✓   |   ✓    |                       | `/users/:id/posts\|albums\|todos` |
+Every resource is tested with all six methods: `GET` list, `GET` by id, `POST`, `PUT`, `PATCH` and `DELETE`.
+
+| Resource   | Records | Filters tested        | Nested routes tested                                        |
+| ---------- | ------: | --------------------- | ----------------------------------------------------------- |
+| `posts`    |     100 | `userId`              | `/posts/:id/comments`                                       |
+| `comments` |     500 | `postId`              | –                                                           |
+| `albums`   |     100 | `userId`              | `/albums/:id/photos`                                        |
+| `photos`   |    5000 | `albumId`             | –                                                           |
+| `todos`    |     200 | `userId`, `completed` | –                                                           |
+| `users`    |      10 | –                     | `/users/:id/posts`, `/users/:id/albums`, `/users/:id/todos` |
 
 ### Types of validations implemented
 
