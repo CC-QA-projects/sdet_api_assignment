@@ -17,7 +17,7 @@ interface UserOwnedItem {
 const USER_OWNED_RESOURCES: string[] = ['posts', 'albums', 'todos'];
 
 test.describe('GET /users', () => {
-  test('returns all 10 users matching the user schema', async ({ request }) => {
+  test('returns all 10 users matching the user schema', { tag: '@smoke' }, async ({ request }) => {
     const response = await request.get('/users');
     await assertJsonResponse(response, 200);
     const users: User[] = await response.json();
@@ -44,7 +44,7 @@ test.describe('GET /users', () => {
 
 test.describe('GET /users/:id', () => {
   for (const userId of [FIRST_USER_ID, LAST_USER_ID]) {
-    test(`returns the user with id ${userId}`, async ({ request }) => {
+    test(`returns the user with id ${userId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/users/${userId}`);
       await assertJsonResponse(response, 200);
       const user: User = await response.json();

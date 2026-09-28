@@ -10,7 +10,7 @@ const LAST_POST_ID = TOTAL_POSTS;
 const USER_ID = 1;
 
 test.describe('GET /posts', () => {
-  test('returns all 100 posts matching the post schema', async ({ request }) => {
+  test('returns all 100 posts matching the post schema', { tag: '@smoke' }, async ({ request }) => {
     const response = await request.get('/posts');
     await assertJsonResponse(response, 200);
     const posts: Post[] = await response.json();
@@ -42,7 +42,7 @@ test.describe('GET /posts', () => {
 
 test.describe('GET /posts/:id', () => {
   for (const postId of [FIRST_POST_ID, LAST_POST_ID]) {
-    test(`returns the post with id ${postId}`, async ({ request }) => {
+    test(`returns the post with id ${postId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/posts/${postId}`);
       await assertJsonResponse(response, 200);
       const post: Post = await response.json();

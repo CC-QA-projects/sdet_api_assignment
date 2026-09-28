@@ -21,7 +21,7 @@ const TODO_FILTER_CASES: TodoFilterCase[] = [
 ];
 
 test.describe('GET /todos', () => {
-  test('returns all 200 todos matching the todo schema', async ({ request }) => {
+  test('returns all 200 todos matching the todo schema', { tag: '@smoke' }, async ({ request }) => {
     const response = await request.get('/todos');
     await assertJsonResponse(response, 200);
     const todos: Todo[] = await response.json();
@@ -57,7 +57,7 @@ test.describe('GET /todos', () => {
 
 test.describe('GET /todos/:id', () => {
   for (const todoId of [FIRST_TODO_ID, LAST_TODO_ID]) {
-    test(`returns the todo with id ${todoId}`, async ({ request }) => {
+    test(`returns the todo with id ${todoId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/todos/${todoId}`);
       await assertJsonResponse(response, 200);
       const todo: Todo = await response.json();

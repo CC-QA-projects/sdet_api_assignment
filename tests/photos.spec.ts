@@ -11,14 +11,18 @@ const ALBUM_ID = 3;
 const PHOTOS_PER_ALBUM = 50;
 
 test.describe('GET /photos', () => {
-  test('returns all 5000 photos matching the photo schema', async ({ request }) => {
-    const response = await request.get('/photos');
-    await assertJsonResponse(response, 200);
-    const photos: Photo[] = await response.json();
+  test(
+    'returns all 5000 photos matching the photo schema',
+    { tag: '@smoke' },
+    async ({ request }) => {
+      const response = await request.get('/photos');
+      await assertJsonResponse(response, 200);
+      const photos: Photo[] = await response.json();
 
-    assertMatchesSchema(photos, z.array(photoSchema));
-    expect(photos).toHaveLength(TOTAL_PHOTOS);
-  });
+      assertMatchesSchema(photos, z.array(photoSchema));
+      expect(photos).toHaveLength(TOTAL_PHOTOS);
+    },
+  );
 
   test('returns photos with unique ids', async ({ request }) => {
     const response = await request.get('/photos');
@@ -45,7 +49,7 @@ test.describe('GET /photos', () => {
 
 test.describe('GET /photos/:id', () => {
   for (const photoId of [FIRST_PHOTO_ID, LAST_PHOTO_ID]) {
-    test(`returns the photo with id ${photoId}`, async ({ request }) => {
+    test(`returns the photo with id ${photoId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/photos/${photoId}`);
       await assertJsonResponse(response, 200);
       const photo: Photo = await response.json();

@@ -11,14 +11,18 @@ const POST_ID = 1;
 const COMMENTS_PER_POST = 5;
 
 test.describe('GET /comments', () => {
-  test('returns all 500 comments matching the comment schema', async ({ request }) => {
-    const response = await request.get('/comments');
-    await assertJsonResponse(response, 200);
-    const comments: Comment[] = await response.json();
+  test(
+    'returns all 500 comments matching the comment schema',
+    { tag: '@smoke' },
+    async ({ request }) => {
+      const response = await request.get('/comments');
+      await assertJsonResponse(response, 200);
+      const comments: Comment[] = await response.json();
 
-    assertMatchesSchema(comments, z.array(commentSchema));
-    expect(comments).toHaveLength(TOTAL_COMMENTS);
-  });
+      assertMatchesSchema(comments, z.array(commentSchema));
+      expect(comments).toHaveLength(TOTAL_COMMENTS);
+    },
+  );
 
   test('returns comments with unique ids', async ({ request }) => {
     const response = await request.get('/comments');
@@ -45,7 +49,7 @@ test.describe('GET /comments', () => {
 
 test.describe('GET /comments/:id', () => {
   for (const commentId of [FIRST_COMMENT_ID, LAST_COMMENT_ID]) {
-    test(`returns the comment with id ${commentId}`, async ({ request }) => {
+    test(`returns the comment with id ${commentId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/comments/${commentId}`);
       await assertJsonResponse(response, 200);
       const comment: Comment = await response.json();

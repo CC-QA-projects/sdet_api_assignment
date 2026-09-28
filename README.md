@@ -79,10 +79,13 @@ npm run format:check  # Prettier
 
 ```bash
 npm test                                   # all 79 tests
+npm run test:smoke                         # 18 @smoke tests: list + by-id for every resource
 npx playwright test tests/posts.spec.ts    # one file
 npx playwright test -g "returns 404"       # tests whose title matches a pattern
 API_BASE_URL=http://localhost:3000 npm test   # run against another host (e.g. a local json-server)
 ```
+
+The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: '@smoke' }, ...)`). It is a quick health check that every resource responds with valid data, useful before running the full suite.
 
 ### View test results
 

@@ -10,14 +10,18 @@ const LAST_ALBUM_ID = TOTAL_ALBUMS;
 const USER_ID = 2;
 
 test.describe('GET /albums', () => {
-  test('returns all 100 albums matching the album schema', async ({ request }) => {
-    const response = await request.get('/albums');
-    await assertJsonResponse(response, 200);
-    const albums: Album[] = await response.json();
+  test(
+    'returns all 100 albums matching the album schema',
+    { tag: '@smoke' },
+    async ({ request }) => {
+      const response = await request.get('/albums');
+      await assertJsonResponse(response, 200);
+      const albums: Album[] = await response.json();
 
-    assertMatchesSchema(albums, z.array(albumSchema));
-    expect(albums).toHaveLength(TOTAL_ALBUMS);
-  });
+      assertMatchesSchema(albums, z.array(albumSchema));
+      expect(albums).toHaveLength(TOTAL_ALBUMS);
+    },
+  );
 
   test('returns albums with unique ids', async ({ request }) => {
     const response = await request.get('/albums');
@@ -42,7 +46,7 @@ test.describe('GET /albums', () => {
 
 test.describe('GET /albums/:id', () => {
   for (const albumId of [FIRST_ALBUM_ID, LAST_ALBUM_ID]) {
-    test(`returns the album with id ${albumId}`, async ({ request }) => {
+    test(`returns the album with id ${albumId}`, { tag: '@smoke' }, async ({ request }) => {
       const response = await request.get(`/albums/${albumId}`);
       await assertJsonResponse(response, 200);
       const album: Album = await response.json();
