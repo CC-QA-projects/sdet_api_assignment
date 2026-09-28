@@ -13,6 +13,7 @@ API test automation for [JSONPlaceholder](https://jsonplaceholder.typicode.com),
    - [Build the project](#build-the-project)
    - [Execute the test suite](#execute-the-test-suite)
    - [View test results](#view-test-results)
+   - [Latest test run](#latest-test-run)
 3. [Coverage summary](#3-coverage-summary)
    - [Routes/resources tested](#routesresources-tested)
    - [Types of validations implemented](#types-of-validations-implemented)
@@ -93,6 +94,17 @@ The smoke subset uses Playwright's built-in `tag` option (`test('title', { tag: 
 - **Terminal:** the list reporter prints each test as it runs, followed by a summary.
 - **HTML report:** `npm run report` opens `playwright-report/`. Failed tests include a trace.
 - **CI:** each GitHub Actions run uploads the report as the `playwright-report` artifact.
+
+### Latest test run
+
+A snapshot of a full local run is committed in `docs/`, so the results can be seen without running anything.
+
+| Result                                     | Date       | Node     | Playwright |
+| ------------------------------------------ | ---------- | -------- | ---------- |
+| **106 passed**, 0 failed (8 workers, ~4 s) | 2026-09-28 | v22.22.0 | 1.63.0     |
+
+- **[`docs/test-run.txt`](docs/test-run.txt):** the full terminal output, listing every test. Readable directly on GitHub.
+- **`docs/test-report/`:** the HTML report from the same run. To open it, clone the repo and run `npx playwright show-report docs/test-report`, or download `index.html` and open it in a browser.
 
 ## 3. Coverage summary
 
